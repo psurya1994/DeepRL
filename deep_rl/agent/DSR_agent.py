@@ -98,7 +98,7 @@ class DSRAgent(BaseAgent):
         for state, action, reward, next_state, done, info in transitions:
 
             # Reporting training progress on stdout
-            self.record_online_return(info)
+            # self.record_online_return(info)
             
             # Recording train returns in list
             for i, info_ in enumerate(info):
