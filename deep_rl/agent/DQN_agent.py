@@ -62,7 +62,8 @@ class DQNAgent(BaseAgent):
         try:
             self.is_wb = config.is_wb
         except:
-            self.is_wb = True
+            self.is_wb = False
+            
         if(self.is_wb):
             wandb.init(entity="psurya", project="sample-project")
             wandb.watch_called = False

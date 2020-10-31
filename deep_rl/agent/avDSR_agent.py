@@ -115,9 +115,14 @@ class avDSRAgent(BaseAgent):
 
         self.total_steps = 0
         self.batch_indices = range_tensor(self.replay.batch_size) # Need to make this size bigger
+        try:
+            self.is_wb = config.is_wb
+        except:
+            self.is_wb = False
 
-        wandb.init(entity="psurya", project="sample-project")
-        wandb.watch_called = False
+        if(self.is_wb):
+            wandb.init(entity="psurya", project="sample-project")
+            wandb.watch_called = False
 
     def close(self):
         close_obj(self.replay)
@@ -183,7 +188,8 @@ class avDSRAgent(BaseAgent):
             self.loss_vec.append(total_loss.item())
             self.loss_psi_vec.append(total_loss.item())
             
-            wandb.log({"steps_loss": self.total_steps, "loss": loss.item(), "loss_psi": loss_psi.item(), "loss_q": loss_q.item()})
+            if(self.is_wb):
+                wandb.log({"steps_loss": self.total_steps, "loss": loss.item(), "loss_psi": loss_psi.item(), "loss_q": loss_q.item()})
             
             self.optimizer.zero_grad()
 #             loss.backward(torch.ones(loss.shape))
