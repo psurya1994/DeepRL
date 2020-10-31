@@ -42,7 +42,7 @@ class DQNAgent(BaseAgent):
         self.config = config
         config.lock = mp.Lock()
 
-        # self.returns = []
+        self.returns = []
         
         self.replay = config.replay_fn()
         self.actor = DQNActor(config)
@@ -52,7 +52,7 @@ class DQNAgent(BaseAgent):
         self.target_network = config.network_fn()
         self.target_network.load_state_dict(self.network.state_dict())
         self.optimizer = config.optimizer_fn(self.network.parameters())
-        # self.loss_vec = []
+        self.loss_vec = []
 
         self.actor.set_network(self.network)
 
@@ -85,13 +85,13 @@ class DQNAgent(BaseAgent):
         transitions = self.actor.step()
         experiences = []
         for state, action, reward, next_state, done, info in transitions:
-            self.record_online_return(info)
+            # self.record_online_return(info)
             
             # Recording train returns in list
             for i, info_ in enumerate(info):
                 ret = info_['episodic_return']
                 if ret is not None:
-                    # self.returns.append([self.total_steps, ret])
+                    self.returns.append([self.total_steps, ret])
                     if(self.is_wb):
                         wandb.log({"steps_ret": self.total_steps, "returns": ret})
             
