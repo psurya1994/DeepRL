@@ -99,9 +99,9 @@ class avDSRAgent(BaseAgent):
         self.config = config
         config.lock = mp.Lock()
         
-        # self.loss_q_vec = []
-        # self.loss_psi_vec = []
-        # self.loss_vec = []
+        self.loss_q_vec = []
+        self.loss_psi_vec = []
+        self.loss_vec = []
 
         self.replay = config.replay_fn()
         self.choice = config.choice
