@@ -48,10 +48,10 @@ class DSRAgent(BaseAgent):
         self.config = config
         config.lock = mp.Lock()
         
-        # self.loss_q_vec = []
-        # self.loss_psi_vec = []
-        # self.loss_vec = []
-        # self.returns = []
+        self.loss_q_vec = []
+        self.loss_psi_vec = []
+        self.loss_vec = []
+        self.returns = []
 
         self.replay = config.replay_fn()
         self.actor = DSRActor(config)
@@ -68,8 +68,14 @@ class DSRAgent(BaseAgent):
         self.total_steps = 0
         self.batch_indices = range_tensor(self.replay.batch_size)
 
-        wandb.init(entity="psurya", project="sample-project")
-        wandb.watch_called = False
+        try:
+            self.is_wb = config.is_wb
+        except:
+            self.is_wb = False
+        
+        if(self.is_wb):
+            wandb.init(entity="psurya", project="sample-project")
+            wandb.watch_called = False
 
     def close(self):
         close_obj(self.replay)
@@ -92,14 +98,15 @@ class DSRAgent(BaseAgent):
         for state, action, reward, next_state, done, info in transitions:
 
             # Reporting training progress on stdout
-            # self.record_online_return(info)
+            self.record_online_return(info)
             
             # Recording train returns in list
             for i, info_ in enumerate(info):
                 ret = info_['episodic_return']
                 if ret is not None:
-                    # self.returns.append([self.total_steps, ret])
-                    wandb.log({"steps_ret": self.total_steps, "returns": ret})
+                    self.returns.append([self.total_steps, ret])
+                    if(self.is_wb):
+                        wandb.log({"steps_ret": self.total_steps, "returns": ret})
                     
             self.total_steps += 1
             reward = config.reward_normalizer(reward)
@@ -157,10 +164,11 @@ class DSRAgent(BaseAgent):
             loss = loss_q + loss_psi
             
             # Storing loss estimates
-            # self.loss_vec.append(loss.item())
-            # self.loss_q_vec.append(loss_q.item())
-            # self.loss_psi_vec.append(loss_psi.item())
-            wandb.log({"steps_loss": self.total_steps, "loss": loss.item(), "loss_psi": loss_psi.item(), "loss_q": loss_q.item()})
+            self.loss_vec.append(loss.item())
+            self.loss_q_vec.append(loss_q.item())
+            self.loss_psi_vec.append(loss_psi.item())
+            if(self.is_wb):
+                wandb.log({"steps_loss": self.total_steps, "loss": loss.item(), "loss_psi": loss_psi.item(), "loss_q": loss_q.item()})
             
             if(not np.isfinite(loss.item())):
                 print(' loss has diverged!')
